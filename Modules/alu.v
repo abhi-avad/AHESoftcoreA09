@@ -55,17 +55,21 @@ always @* begin
 
 				{cF, ORes} = A + B + IFlags[CarryFlag];
 
+				// $display("%d %h + %h = %h = %h", $stime, A, B, (A + B + IFlags[CarryFlag]), {cF, ORes});	// test code for debugging
+
 				`ifdef SIMULATE
 					$display("%d Add_OP: Sum: %h, Carry: %h", $stime, ORes, cF);
 				`endif
 			end
 
-		`SUB: begin
+		`SUB: begin					// SUB => Subtract without borrow
 				`ifdef SIMULATE
 					$display("%d Sub_OP: A: %h - B: %h", $stime, A, B);
 				`endif
 
 				{cF, ORes} = A + ((~B) + 1);
+
+				// $display("%d %h - %h = %h + %h = %h = %h", $stime, A, B, A, ((~B) + 1), (A + ((~B) + 1)),{cF, ORes});		// test code for debugging
 
 				`ifdef SIMULATE
 					$display("%d Sub_OP: Carry: %h, Diff: %h", $stime, cF, ORes);
@@ -98,15 +102,41 @@ always @* begin
 	endcase // FuncOp
 end
 
+/*
+assign OFlags[2:0] = {				// V
+	ORes[DataWidth-1],			// N
+	cF,							// C
+	ORes == {DataWidth{1'b0}}	// Z
+};
+*/
+
 assign OFlags = {
 	(
-		((A[DataWidth-1] == 0) && (B[DataWidth-1] == 0) && (ORes[DataWidth-1] == 1)) ||
-		((A[DataWidth-1] == 1) && (B[DataWidth-1] == 1) && (ORes[DataWidth-1] == 0))
+		((A[DataWidth-1] == 0) && (B[DataWidth-1] == 0) && (ORes[DataWidth-1] == 1) && (FuncOp != `SUB)) ||
+		((A[DataWidth-1] == 1) && (B[DataWidth-1] == 1) && (ORes[DataWidth-1] == 0) && (FuncOp != `SUB)) ||
+		((A[DataWidth-1] == 0) && (B[DataWidth-1] == 1) && (ORes[DataWidth-1] == 1) && (FuncOp == `SUB)) ||
+		((A[DataWidth-1] == 1) && (B[DataWidth-1] == 0) && (ORes[DataWidth-1] == 0) && (FuncOp == `SUB))
 	),							// V
 	ORes[DataWidth-1],			// N
 	cF,							// C
 	ORes == {DataWidth{1'b0}}	// Z
 };
+
+
+/*
+	INCOMPLETE ????
+
+	Operation 	VNCZ	Meaning
+	X			XXX1	A == B
+	ADD			0000	Positive Number
+	SUB			0010	Negative Number
+	SUB			0100		
+				1100	Negative signed number	
+				1110	Positive signed number
+
+*/
+
+
 
 assign Y = ORes;
 

@@ -1,5 +1,5 @@
-TEST_TARGET = SIMULATE_ADD
-#TEST_TARGET = SIMULATE_SUB
+#TEST_TARGET = SIMULATE_ADD
+TEST_TARGET = SIMULATE_SUB
 
 TEST_BENCH = alu_tb
 
@@ -12,6 +12,6 @@ MODULES_FILES = $(TEST_BENCH).v $(SUB_MODULE_FILES)
 sim:
 	@echo "#### Simulation via iverilog..."
 	$(info MODULES_FILES is $(MODULES_FILES))
-	iverilog -D$(TEST_TARGET) -o $(TEST_BENCH).vvp $(MODULES_FILES)
+	iverilog -D$(TEST_TARGET) -DSIMULATE -o $(TEST_BENCH).vvp $(MODULES_FILES)
 	vvp $(TEST_BENCH).vvp -lxt2
 	gtkwave $(TEST_BENCH).vcd
